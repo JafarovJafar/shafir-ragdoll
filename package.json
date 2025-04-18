@@ -1,0 +1,14 @@
+{
+  "name": "jaf.shafir.ragdoll",
+  "version": "0.0.1",
+  "displayName": "Shafir Ragdoll",
+  "description": "",
+  "unity": "2019.1",
+  "unityRelease": "0b5",
+  "documentationUrl": "https://github.com/JafarovJafar/shafir-ragdoll/blob/main/README.md",
+  "author": {
+    "name": "Jafarov Jafar",
+    "email": "jafarovja@yandex.ru",
+    "url": "https://github.com/JafarovJafar"
+  }
+}
