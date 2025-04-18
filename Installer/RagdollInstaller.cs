@@ -5,6 +5,7 @@ namespace Shafir.Ragdoll
 {
     internal class RagdollInstaller : MonoBehaviour
     {
+        [SerializeField] private bool drawGizmos;
         [SerializeField] private BoxPart pelvis;
         [SerializeField] private BoxPart spine_1;
         [SerializeField] private BoxPart spine_2;
@@ -24,20 +25,196 @@ namespace Shafir.Ragdoll
 
         private readonly float jointsRadius = 0.05f;
 
+        private const string COLLIDER_NAME = "ShafirRagdollCollider";
+
+        private void InstallBox(BoxPart part)
+        {
+            GameObject colliderGO;
+
+            if (part.GoalTransform.Find(COLLIDER_NAME) == null)
+                colliderGO = new GameObject(COLLIDER_NAME);
+            else
+                colliderGO = part.GoalTransform.Find(COLLIDER_NAME).gameObject;
+
+            var colliderTransform = colliderGO.transform;
+            colliderTransform.SetParent(part.GoalTransform);
+            colliderTransform.position = part.GoalTransform.position + part.Offset;
+            var eulers = part.GoalTransform.eulerAngles;
+            eulers += part.Rotation;
+            colliderTransform.eulerAngles = eulers;
+
+            var collider = colliderGO.AddComponent<BoxCollider>();
+            collider.size = part.Size;
+
+            part.GoalTransform.gameObject.AddComponent<Rigidbody>();
+        }
+
+        private void ClearBox(BoxPart part)
+        {
+            var colliderTransform = part.GoalTransform.Find(COLLIDER_NAME);
+            if (colliderTransform == null)
+                return;
+
+            var colliderGO = colliderTransform.gameObject;
+            DestroyImmediate(colliderGO);
+        }
+
+        private void InstallCapsule(Transform start, Transform end, float radius)
+        {
+            if (start == null)
+                return;
+
+            if (end == null)
+                return;
+
+            var length = Vector3.Distance(start.position, end.position);
+
+            //CapsuleCollider collider;
+            BoxCollider collider;
+
+            if (start.gameObject.TryGetComponent(out collider) == false)
+            {
+                collider = start.gameObject.AddComponent<BoxCollider>();
+            }
+
+            //collider.radius = radius;
+            //collider.height = length;
+            collider.size = new Vector3(radius * 2f, length, radius * 2f);
+            collider.center = (length / 2f) * Vector3.up;
+
+            start.gameObject.AddComponent<Rigidbody>();
+        }
+
+        private void ClearCapsule(Transform start)
+        {
+            if (start == null)
+                return;
+
+            if (start.TryGetComponent(out BoxCollider collider) == false)
+                return;
+
+            DestroyImmediate(collider);
+
+            var rigidbody = start.GetComponent<Rigidbody>();
+            if (rigidbody != null)
+                DestroyImmediate(rigidbody);
+        }
+
+        private void InstallLimb(LimbData limb)
+        {
+            InstallCapsule(limb.Point1, limb.Point2, limb.Radius);
+            InstallCapsule(limb.Point2, limb.Point3, limb.Radius);
+            InstallBox(limb.End);
+
+            InstallJoint(limb.Point3.gameObject, limb.Point2.gameObject);
+            InstallJoint(limb.Point2.gameObject, limb.Point1.gameObject);
+        }
+
+        private void ClearLimb(LimbData limb)
+        {
+            ClearCapsule(limb.Point1);
+            ClearCapsule(limb.Point2);
+            ClearBox(limb.End);
+        }
+
         [Button]
         private void Install()
         {
-            
+            InstallBox(pelvis);
+
+            InstallBox(spine_1);
+            InstallBox(spine_2);
+            InstallBox(spine_3);
+
+            InstallBox(head);
+
+            InstallLimb(leftLeg);
+            InstallLimb(rightLeg);
+
+            InstallLimb(leftArm);
+            InstallLimb(rightArm);
+
+
+
+            InstallJoint(spine_1.GoalTransform.gameObject, pelvis.GoalTransform.gameObject);
+            InstallJoint(spine_2.GoalTransform.gameObject, spine_1.GoalTransform.gameObject);
+            InstallJoint(spine_3.GoalTransform.gameObject, spine_2.GoalTransform.gameObject);
+
+            InstallJoint(head.GoalTransform.gameObject, spine_3.GoalTransform.gameObject);
+
+            InstallJoint(leftLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
+            InstallJoint(rightLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
+
+            InstallJoint(leftArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
+            InstallJoint(rightArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
+        }
+
+        private void InstallJoint(GameObject from, GameObject to)
+        {
+            var joint = from.AddComponent<ConfigurableJoint>();
+            joint.connectedBody = to.GetComponent<Rigidbody>();
+            joint.xMotion = ConfigurableJointMotion.Locked;
+            joint.yMotion = ConfigurableJointMotion.Locked;
+            joint.zMotion = ConfigurableJointMotion.Locked;
         }
 
         [Button]
         private void Clear()
         {
+            var js = GetComponentsInChildren<Joint>();
+            for (var idx = js.Length - 1; idx >= 0; idx--)
+            {
+                var j = js[idx];
+                DestroyImmediate(j);
+            }
             
+            var rs = GetComponentsInChildren<Rigidbody>();
+            for (var idx = rs.Length - 1; idx >= 0; idx--)
+            {
+                var r = rs[idx];
+                DestroyImmediate(r);
+            }
+
+            ClearBox(pelvis);
+
+            ClearBox(spine_1);
+            ClearBox(spine_2);
+            ClearBox(spine_3);
+
+            ClearBox(head);
+
+            ClearLimb(leftLeg);
+            ClearLimb(rightLeg);
+
+            ClearLimb(leftArm);
+            ClearLimb(rightArm);
+
+            var joints = GetComponentsInChildren<RagdollJoint>();
+
+            for (var idx = joints.Length - 1; idx >= 0; idx--)
+            {
+                var component = joints[idx];
+                DestroyImmediate(component);
+            }
+
+            var parts = GetComponentsInChildren<RagdollPart>();
+
+            for (var idx = parts.Length - 1; idx >= 0; idx--)
+            {
+                var component = parts[idx];
+                DestroyImmediate(component);
+            }
+
+            var ragdoll = GetComponentInChildren<ShafirRagdoll>();
+            if (ragdoll != null)
+                DestroyImmediate(ragdoll);
         }
-        
+
         private void OnDrawGizmos()
         {
+            if (drawGizmos == false)
+                return;
+
             DrawCube(pelvis, pelvisColor);
             DrawCube(spine_1, spineColor);
             DrawCube(spine_2, spineColor);

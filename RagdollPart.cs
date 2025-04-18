@@ -5,7 +5,7 @@ namespace Shafir.Ragdoll
     /// <summary>
     /// Часть тела (или конечность)
     /// </summary>
-    internal class RagdollPart : MonoBehaviour
+    public class RagdollPart : MonoBehaviour
     {
         [SerializeField] private Collider collider;
         [SerializeField] private Rigidbody rigidbody;

@@ -2,7 +2,8 @@
     "name": "Shafir.Ragdoll.Installer",
     "rootNamespace": "Shafir.Ragdoll.Installer",
     "references": [
-        "EasyButtons"
+        "EasyButtons",
+        "Shafir.Ragdoll"
     ],
     "includePlatforms": [],
     "excludePlatforms": [],
