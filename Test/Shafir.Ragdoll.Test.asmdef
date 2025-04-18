@@ -1,0 +1,17 @@
+{
+    "name": "Shafir.Ragdoll.Test",
+    "rootNamespace": "Shafir.Ragdoll.Test",
+    "references": [
+        "EasyButtons",
+        "Shafir.Ragdoll"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
