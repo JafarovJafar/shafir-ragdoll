@@ -18,12 +18,13 @@ namespace Shafir.Ragdoll
         [SerializeField] private LimbData leftArm;
         [SerializeField] private LimbData rightArm;
 
-        private readonly Color pelvisColor = Color.cyan;
-        private readonly Color spineColor = Color.green;
-        private readonly Color headColor = Color.magenta;
-        private readonly Color legsColor = Color.blue;
-        private readonly Color armsColor = Color.red;
-        private readonly Color jointsColor = Color.yellow;
+        private const float GIZMOS_TRANSPARENCY = 0.25f;
+        private readonly Color pelvisColor = new Color(0, 1, 1, GIZMOS_TRANSPARENCY);
+        private readonly Color spineColor = new Color(0, 1, 0, GIZMOS_TRANSPARENCY);
+        private readonly Color headColor = new Color(1, 0, 1, GIZMOS_TRANSPARENCY);
+        private readonly Color legsColor = new Color(0, 0, 1, GIZMOS_TRANSPARENCY);
+        private readonly Color armsColor = new Color(1, 0, 0, GIZMOS_TRANSPARENCY);
+        private readonly Color jointsColor = new Color(1, 1, 0, GIZMOS_TRANSPARENCY);
 
         private readonly float jointsRadius = 0.05f;
 
