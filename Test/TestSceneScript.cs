@@ -16,6 +16,9 @@ namespace Shafir.Ragdoll.Test
         [SerializeField] private Camera mainCamera;
         [SerializeField] private ShafirRagdoll ragdoll;
 
+        [SerializeField] private PushSettings pushSettings;
+        [SerializeField] private DragSettings dragSettings;
+
         private PushTestModule _pushTestModule;
         private DragTestModule _dragTestModule;
         private PermanentTestModule _permanentTestModule;
@@ -23,9 +26,15 @@ namespace Shafir.Ragdoll.Test
 
         private void Awake()
         {
-            _pushTestModule = new PushTestModule(mainCamera, ragdoll);
-            _dragTestModule = new DragTestModule(mainCamera, ragdoll);
+            ragdoll.Initialize();
+
+            _pushTestModule = new PushTestModule(mainCamera, ragdoll, pushSettings);
+            _dragTestModule = new DragTestModule(mainCamera, dragSettings);
             _permanentTestModule = new PermanentTestModule();
+
+            ragdoll.Enable();
+            SwitchMode(Mode.Drag);
+            //SwitchMode(Mode.Push);
         }
 
         [Button]

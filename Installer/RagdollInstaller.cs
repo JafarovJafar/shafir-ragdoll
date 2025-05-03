@@ -6,6 +6,8 @@ namespace Shafir.Ragdoll
     internal class RagdollInstaller : MonoBehaviour
     {
         [SerializeField] private bool drawGizmos;
+        [SerializeField] private bool destroyAfterInstall;
+
         [SerializeField] private BoxPart pelvis;
         [SerializeField] private BoxPart spine_1;
         [SerializeField] private BoxPart spine_2;
@@ -27,6 +29,81 @@ namespace Shafir.Ragdoll
 
         private const string COLLIDER_NAME = "ShafirRagdollCollider";
 
+        [Button]
+        private void Install()
+        {
+            InstallSpine();
+            InstallLegs();
+            InstallArms();
+
+            if (destroyAfterInstall)
+            {
+                gameObject.AddComponent<ShafirRagdoll>();
+                DestroyImmediate(this);
+            }
+        }
+        
+        private void InstallLimb(LimbData limb)
+        {
+            InstallCapsule(limb.Point1, limb.Point2, limb.Radius);
+            InstallCapsule(limb.Point2, limb.Point3, limb.Radius);
+            InstallBox(limb.End);
+
+            InstallJoint(limb.Point3.gameObject, limb.Point2.gameObject);
+            InstallJoint(limb.Point2.gameObject, limb.Point1.gameObject);
+        }
+
+        private void ClearLimb(LimbData limb)
+        {
+            ClearCapsule(limb.Point1);
+            ClearCapsule(limb.Point2);
+            ClearBox(limb.End);
+        }
+
+        private void InstallSpine()
+        {
+            InstallBox(pelvis);
+
+            InstallBox(spine_1);
+            InstallBox(spine_2);
+            InstallBox(spine_3);
+
+            InstallBox(head);
+
+            InstallJoint(spine_1.GoalTransform.gameObject, pelvis.GoalTransform.gameObject);
+            InstallJoint(spine_2.GoalTransform.gameObject, spine_1.GoalTransform.gameObject);
+            InstallJoint(spine_3.GoalTransform.gameObject, spine_2.GoalTransform.gameObject);
+
+            InstallJoint(head.GoalTransform.gameObject, spine_3.GoalTransform.gameObject);
+        }
+
+        private void InstallLegs()
+        {
+            InstallLimb(leftLeg);
+            InstallLimb(rightLeg);
+
+            InstallJoint(leftLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
+            InstallJoint(rightLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
+        }
+
+        private void InstallArms()
+        {
+            InstallLimb(leftArm);
+            InstallLimb(rightArm);
+
+            InstallJoint(leftArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
+            InstallJoint(rightArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
+        }
+
+        private void InstallJoint(GameObject from, GameObject to)
+        {
+            var joint = from.AddComponent<ConfigurableJoint>();
+            joint.connectedBody = to.GetComponent<Rigidbody>();
+            joint.xMotion = ConfigurableJointMotion.Locked;
+            joint.yMotion = ConfigurableJointMotion.Locked;
+            joint.zMotion = ConfigurableJointMotion.Locked;
+        }
+        
         private void InstallBox(BoxPart part)
         {
             GameObject colliderGO;
@@ -69,7 +146,6 @@ namespace Shafir.Ragdoll
 
             var length = Vector3.Distance(start.position, end.position);
 
-            //CapsuleCollider collider;
             BoxCollider collider;
 
             if (start.gameObject.TryGetComponent(out collider) == false)
@@ -77,8 +153,6 @@ namespace Shafir.Ragdoll
                 collider = start.gameObject.AddComponent<BoxCollider>();
             }
 
-            //collider.radius = radius;
-            //collider.height = length;
             collider.size = new Vector3(radius * 2f, length, radius * 2f);
             collider.center = (length / 2f) * Vector3.up;
 
@@ -100,64 +174,6 @@ namespace Shafir.Ragdoll
                 DestroyImmediate(rigidbody);
         }
 
-        private void InstallLimb(LimbData limb)
-        {
-            InstallCapsule(limb.Point1, limb.Point2, limb.Radius);
-            InstallCapsule(limb.Point2, limb.Point3, limb.Radius);
-            InstallBox(limb.End);
-
-            InstallJoint(limb.Point3.gameObject, limb.Point2.gameObject);
-            InstallJoint(limb.Point2.gameObject, limb.Point1.gameObject);
-        }
-
-        private void ClearLimb(LimbData limb)
-        {
-            ClearCapsule(limb.Point1);
-            ClearCapsule(limb.Point2);
-            ClearBox(limb.End);
-        }
-
-        [Button]
-        private void Install()
-        {
-            InstallBox(pelvis);
-
-            InstallBox(spine_1);
-            InstallBox(spine_2);
-            InstallBox(spine_3);
-
-            InstallBox(head);
-
-            InstallLimb(leftLeg);
-            InstallLimb(rightLeg);
-
-            InstallLimb(leftArm);
-            InstallLimb(rightArm);
-
-
-
-            InstallJoint(spine_1.GoalTransform.gameObject, pelvis.GoalTransform.gameObject);
-            InstallJoint(spine_2.GoalTransform.gameObject, spine_1.GoalTransform.gameObject);
-            InstallJoint(spine_3.GoalTransform.gameObject, spine_2.GoalTransform.gameObject);
-
-            InstallJoint(head.GoalTransform.gameObject, spine_3.GoalTransform.gameObject);
-
-            InstallJoint(leftLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
-            InstallJoint(rightLeg.Point1.gameObject, pelvis.GoalTransform.gameObject);
-
-            InstallJoint(leftArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
-            InstallJoint(rightArm.Point1.gameObject, spine_1.GoalTransform.gameObject);
-        }
-
-        private void InstallJoint(GameObject from, GameObject to)
-        {
-            var joint = from.AddComponent<ConfigurableJoint>();
-            joint.connectedBody = to.GetComponent<Rigidbody>();
-            joint.xMotion = ConfigurableJointMotion.Locked;
-            joint.yMotion = ConfigurableJointMotion.Locked;
-            joint.zMotion = ConfigurableJointMotion.Locked;
-        }
-
         [Button]
         private void Clear()
         {
@@ -167,7 +183,7 @@ namespace Shafir.Ragdoll
                 var j = js[idx];
                 DestroyImmediate(j);
             }
-            
+
             var rs = GetComponentsInChildren<Rigidbody>();
             for (var idx = rs.Length - 1; idx >= 0; idx--)
             {
@@ -209,6 +225,8 @@ namespace Shafir.Ragdoll
             if (ragdoll != null)
                 DestroyImmediate(ragdoll);
         }
+
+        #region Gizmos
 
         private void OnDrawGizmos()
         {
@@ -304,5 +322,7 @@ namespace Shafir.Ragdoll
             Gizmos.DrawCube(Vector3.zero, Vector3.one);
             Gizmos.DrawWireCube(Vector3.zero, Vector3.one);
         }
+
+        #endregion
     }
 }

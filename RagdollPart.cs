@@ -7,6 +7,8 @@ namespace Shafir.Ragdoll
     /// </summary>
     public class RagdollPart : MonoBehaviour
     {
+        public Rigidbody Rigidbody => rigidbody;
+
         [SerializeField] private Collider collider;
         [SerializeField] private Rigidbody rigidbody;
 
@@ -14,6 +16,11 @@ namespace Shafir.Ragdoll
         {
             rigidbody.isKinematic = !isEnabled;
             collider.enabled = isEnabled;
+        }
+
+        public void AddForce(Vector3 force, ForceMode forceMode)
+        {
+            rigidbody.AddForce(force, forceMode);
         }
 
         private void Reset()
