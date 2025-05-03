@@ -5,7 +5,7 @@ namespace Shafir.Ragdoll
     /// <summary>
     /// Сустав ragdoll
     /// </summary>
-    internal class RagdollJoint : MonoBehaviour
+    public class RagdollJoint : MonoBehaviour
     {
         [SerializeField] private Joint joint;
 
